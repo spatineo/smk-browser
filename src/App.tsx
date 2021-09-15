@@ -18,15 +18,10 @@ function helloWorld() {
     })
 }
 
-const openFileBrowser = async () => {
-  const response = await ipcRenderer.invoke('openFileSystem')
-  console.log(response)
-}
-
 
 function App() {
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px' }}>
+    <div>
       <MainView />
     </div>
   );
