@@ -1,6 +1,8 @@
 import * as React from 'react'
 import { createStyles, makeStyles } from '@material-ui/styles'
-import { AppBar, Grid, TextField } from '@material-ui/core'
+import { AppBar, Button, Grid, TextField, Toolbar, IconButton, Typography } from '@material-ui/core'
+import MenuIcon from '@material-ui/icons/Menu'
+const wkt = require('wkt')
 
 const { ipcRenderer, dialog } = window.require('electron');
 
@@ -38,21 +40,60 @@ const MainView: React.FC = () => {
     setPropertyIDs(event.target.value)
   }
 
-  const folderPathChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFolderPath(event.target.value)
-  }
-
   const openFileBrowser = async () => {
     const response = await ipcRenderer.invoke('openFileSystem')
     setFolderPath(response)
   }
 
+  const getData = () => {
+    const arrayOfIDs = propertyIDs.replace(/[\r\n\t]/g, "").split(',')
+    arrayOfIDs.forEach(async (ID: string) => {
+      const fetchURL = 'https://beta-paikkatieto.maanmittauslaitos.fi/kiinteisto-avoin/simple-features/v1/collections/PalstanSijaintitiedot/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F3067&kiinteistotunnuksenEsitysmuoto='
+      const response = await fetch(fetchURL + ID)
+      const data = await response.json()
+      console.log('1. Fetch: ', data)
+
+      try {
+        data.features.forEach(async (geometry: any) => {
+          const WKTPolygon = wkt.stringify(geometry)
+          const fetchURL = 'https://mtsrajapinnat.metsaan.fi/ATServices/ATXmlExportService/FRStandData/v1/ByPolygon?'
+          const response = await fetch(fetchURL, {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            method: 'POST',
+            body: `wktPolygon=${WKTPolygon}&stdVersion=${forestStandVersion}`
+          })
+          const dataAsText = await response.text()
+          console.log(dataAsText)
+
+
+          // ipcRenderer.invoke('saveXml', { filename: 'data.xml', data: dataAsXML }).then((result: any) => {
+          //   console.log('SAVED!', result)
+          // })
+        })
+
+      } catch (error) {
+        console.log(error)
+      }
+    })
+  }
+
 
   return (
     <div >
-      <AppBar></AppBar>
-
-      <Grid container direction='column' spacing={4}>
+      <AppBar position='static' style={{ marginBottom: '20px' }}>
+        <Toolbar>
+          <IconButton edge="start" color="inherit" aria-label="menu">
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" >
+            News
+          </Typography>
+          <Button color="inherit">Login</Button>
+        </Toolbar>
+      </AppBar>
+      <Grid container direction='column' spacing={4} justifyContent='center' alignItems='center'>
         <Grid item xs={12}>
           <TextField
             id="outlined-multiline-static"
@@ -62,13 +103,15 @@ const MainView: React.FC = () => {
             value={propertyIDs}
             variant="outlined"
             onChange={IDchange}
+            defaultValue="Default Value"
+            fullWidth
           />
         </Grid>
         <Grid item xs={12}>
           <TextField
             id="outlined-select-currency-native"
             select
-            label="Native select"
+            label="Forest Stand"
             value={forestStandVersion}
             onChange={standVersionChange}
             SelectProps={{
@@ -76,6 +119,7 @@ const MainView: React.FC = () => {
             }}
             helperText="Please select your currency"
             variant="outlined"
+            fullWidth
           >
             {currencies.map((option) => (
               <option key={option.value} value={option.value}>
@@ -84,16 +128,20 @@ const MainView: React.FC = () => {
             ))}
           </TextField>
         </Grid>
-
         <Grid item xs={12}>
           <TextField
-            required
-            id="filled-required"
-            label="Required"
+            id="filled-read-only-input"
+            label="Folder path"
+            defaultValue="Hello World"
             value={folderPath}
-            variant="filled"
+            InputProps={{
+              readOnly: true,
+            }}
+            variant="outlined"
+            fullWidth
           />
           <button onClick={() => openFileBrowser()}>openFileBrowser</button>
+          <button onClick={() => getData()}>Get data!</button>
         </Grid>
       </Grid>
     </div>
