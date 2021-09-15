@@ -1,12 +1,8 @@
 import { app, BrowserWindow } from 'electron'
 
 const { ipcMain, dialog } = require('electron')
-
 const fs = require('fs').promises
-
-
 const path = require('path')
-
 
 const createWindow = () => {
   const window = new BrowserWindow({
@@ -40,10 +36,10 @@ app.on('window-all-closed', () => {
   }
 })
 
-ipcMain.handle('saveJson', async (event, obj) => {
+ipcMain.handle('saveXml', async (event, obj) => {
   console.log('Hello, I am a node server. I will save a file', obj.filename)
   var fh = await fs.open(obj.filename, 'w')
-  await fh.writeFile(JSON.stringify(obj.data))
+  await fh.writeFile('./xmlFiles', JSON.stringify(obj.data))
   await fh.close()
   var result = { ok: true }
   console.log('returning', result)
