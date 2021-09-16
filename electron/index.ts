@@ -38,9 +38,13 @@ app.on('window-all-closed', () => {
 
 ipcMain.handle('saveXml', async (event, obj) => {
   console.log('Hello, I am a node server. I will save a file', obj.filename)
-  var fh = await fs.open(obj.filename, 'w')
-  await fh.writeFile('./xmlFiles', JSON.stringify(obj.data))
-  await fh.close()
+  fs.writeFile(`./xmlFiles/${obj.filename}`, obj.data, () => {
+    var result = { ok: true }
+    console.log('returning', result)
+  })
+  // var fh = await fs.open('./xmlFiles', obj.filename, 'w')
+  // await fh.writeFile(obj.data)
+  // await fh.close()
   var result = { ok: true }
   console.log('returning', result)
   return result
