@@ -54,7 +54,7 @@ const MainView: React.FC = () => {
       console.log('1. Fetch: ', data)
 
       try {
-        data.features.forEach(async (geometry: any) => {
+        data.features.forEach(async (geometry: any, index: number) => {
           const WKTPolygon = wkt.stringify(geometry)
           const fetchURL = 'https://mtsrajapinnat.metsaan.fi/ATServices/ATXmlExportService/FRStandData/v1/ByPolygon?'
           const response = await fetch(fetchURL, {
@@ -68,9 +68,9 @@ const MainView: React.FC = () => {
           console.log(dataAsText)
 
 
-          // ipcRenderer.invoke('saveXml', { filename: 'data.xml', data: dataAsXML }).then((result: any) => {
-          //   console.log('SAVED!', result)
-          // })
+          ipcRenderer.invoke('saveXml', { filename: `data${index}.txt`, data: dataAsText }).then((result: any) => {
+            console.log('SAVED!', result)
+          })
         })
 
       } catch (error) {
