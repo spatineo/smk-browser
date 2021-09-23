@@ -3,6 +3,7 @@ import { app, BrowserWindow } from 'electron'
 const { ipcMain, dialog } = require('electron')
 const fs = require('fs').promises
 const path = require('path')
+let selectedPath: string[]
 
 const createWindow = () => {
   const window = new BrowserWindow({
@@ -38,7 +39,7 @@ app.on('window-all-closed', () => {
 
 ipcMain.handle('saveXml', async (event, obj) => {
   console.log('Hello, I am a node server. I will save a file', obj.filename)
-  fs.writeFile(`./xmlFiles/${obj.filename}`, obj.data, () => {
+  fs.writeFile(`${selectedPath}/${obj.filename}`, obj.data, () => {
     var result = { ok: true }
     console.log('returning', result)
   })
@@ -51,9 +52,9 @@ ipcMain.handle('saveXml', async (event, obj) => {
 })
 
 ipcMain.handle('openFileSystem', async (event, window) => {
-  let path = dialog.showOpenDialogSync(window, {
+  selectedPath = dialog.showOpenDialogSync(window, {
     properties: ['openDirectory']
   })
-  console.log('Got the path: ', path)
-  return path
+  console.log('Got the path: ', selectedPath)
+  return selectedPath
 })
