@@ -2,6 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import MainView from './views/mainView';
+import { SnackbarProvider } from 'notistack';
 
 const { ipcRenderer, dialog } = window.require('electron');
 
@@ -22,7 +23,9 @@ function helloWorld() {
 function App() {
   return (
     <div>
-      <MainView />
+      <SnackbarProvider maxSnack={5}>
+        <MainView />
+      </SnackbarProvider>
     </div>
   );
 }
