@@ -1,17 +1,12 @@
 import * as React from 'react'
 import { createStyles, makeStyles } from '@material-ui/styles'
-import { AppBar, Button, Grid, TextField, Toolbar, IconButton, Typography, Snackbar } from '@material-ui/core'
-import { SnackbarOrigin } from '@material-ui/core'
+import { AppBar, Button, Grid, TextField, Toolbar, IconButton, Typography } from '@material-ui/core'
 import MenuIcon from '@material-ui/icons/Menu'
 import DownloadIcon from '@material-ui/icons/CloudDownload'
 import { useSnackbar } from 'notistack'
 const wkt = require('wkt')
 
 const { ipcRenderer, dialog } = window.require('electron');
-
-interface SnackbarState extends SnackbarOrigin {
-  open: boolean;
-}
 
 const MainView: React.FC = () => {
   const classes = useStyles()
@@ -52,24 +47,24 @@ const MainView: React.FC = () => {
     setFolderPath(response)
   }
 
-  const getData = () => {
-    if (folderPath === '') {
-      enqueueSnackbar('This is a snackbar:D')
+  const getData = async () => {
+    if (propertyIDs === '') {
+      enqueueSnackbar('Please add property IDs', { variant: 'error' })
       return
     }
+    if (folderPath === '') {
+      enqueueSnackbar('Please select folder path', { variant: 'error' })
+      return
+    }
+
     const arrayOfIDs = propertyIDs.replace(/[\r\n\t]/g, "").split(',').filter(string => string)
-    // const filteredArray = arrayOfIDs.filter(string => string)
-    console.log(arrayOfIDs)
-    arrayOfIDs.forEach(async (ID: string) => {
+    arrayOfIDs.forEach(async (ID: string, index: number) => {
       const fetchURL = 'https://beta-paikkatieto.maanmittauslaitos.fi/kiinteisto-avoin/simple-features/v1/collections/PalstanSijaintitiedot/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F3067&kiinteistotunnuksenEsitysmuoto='
       const response = await fetch(fetchURL + ID)
       const data = await response.json()
-      console.log('1. Fetch: ', data)
-
       try {
         data.features.forEach(async (geometry: any, index: number) => {
           const WKTPolygon = wkt.stringify(geometry) as string
-          console.log('wktPolygon: ', WKTPolygon)
           const fetchURL = 'https://mtsrajapinnat.metsaan.fi/ATServices/ATXmlExportService/FRStandData/v1/ByPolygon'
           const response = await fetch(fetchURL, {
             headers: {
@@ -78,14 +73,14 @@ const MainView: React.FC = () => {
             method: 'POST',
             body: `wktPolygon=${encodeURIComponent(WKTPolygon)}&stdVersion=${forestStandVersion}`
           })
+          enqueueSnackbar(`Downloading files for ID: ${ID} `, { variant: 'info' })
           const dataAsText = await response.text()
-          console.log(dataAsText)
-
           ipcRenderer.invoke('saveXml', { filename: `data${index}.txt`, data: dataAsText }).then((result: any) => {
             console.log('SAVED!', result)
           })
         })
       } catch (error) {
+        enqueueSnackbar(`Error during download: ${error}`, { variant: 'error' })
         console.log(error)
       }
     })
@@ -95,20 +90,16 @@ const MainView: React.FC = () => {
     <div >
       <AppBar position='static' style={{ marginBottom: '20px' }}>
         <Toolbar>
-          <IconButton edge="start" color="inherit" aria-label="menu">
-            <MenuIcon />
-          </IconButton>
           <Typography variant="h6" >
-            News
+            SMK browser
           </Typography>
-          <Button color="inherit">Login</Button>
         </Toolbar>
       </AppBar>
       <Grid container direction='column' spacing={4} justifyContent='center' alignItems='center'>
         <Grid item xs={12}>
           <TextField
             id="outlined-multiline-static"
-            label="Multiline"
+            label="Property IDs"
             multiline
             rows={4}
             value={propertyIDs}
@@ -155,7 +146,10 @@ const MainView: React.FC = () => {
           />
         </Grid>
         <Grid item xs={12}>
-          <Button variant='outlined' onClick={() => getData()} endIcon={<DownloadIcon />}>
+          <Button
+            variant='outlined'
+            onClick={() => getData()}
+            endIcon={<DownloadIcon />}>
             Download all data
           </Button>
         </Grid>
@@ -166,7 +160,6 @@ const MainView: React.FC = () => {
 
 const useStyles = makeStyles(() =>
   createStyles({
-
   }))
 
 export default MainView
