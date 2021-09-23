@@ -1,13 +1,29 @@
 import * as React from 'react'
 import { createStyles, makeStyles } from '@material-ui/styles'
-import { AppBar, Button, Grid, TextField, Toolbar, IconButton, Typography } from '@material-ui/core'
+import { AppBar, Button, Grid, TextField, Toolbar, IconButton, Typography, Snackbar } from '@material-ui/core'
+import { SnackbarOrigin } from '@material-ui/core'
 import MenuIcon from '@material-ui/icons/Menu'
+import DownloadIcon from '@material-ui/icons/CloudDownload'
+import { useSnackbar } from 'notistack'
 const wkt = require('wkt')
 
 const { ipcRenderer, dialog } = window.require('electron');
 
+interface SnackbarState extends SnackbarOrigin {
+  open: boolean;
+}
+
 const MainView: React.FC = () => {
   const classes = useStyles()
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar()
+  const [propertyIDs, setPropertyIDs] = React.useState('')
+  const [forestStandVersion, setForestStandVersion] = React.useState('MV1.8');
+  const [folderPath, setFolderPath] = React.useState('')
+  const [snackbarState, setSnackbarState] = React.useState<SnackbarState>({
+    open: false,
+    vertical: 'top',
+    horizontal: 'center'
+  })
 
   const currencies = [
     {
@@ -28,9 +44,15 @@ const MainView: React.FC = () => {
     },
   ];
 
-  const [propertyIDs, setPropertyIDs] = React.useState('')
-  const [forestStandVersion, setForestStandVersion] = React.useState('MV1.8');
-  const [folderPath, setFolderPath] = React.useState('')
+  const { vertical, horizontal, open } = snackbarState;
+
+  const showSnackbar = (newState: SnackbarOrigin) => {
+    setSnackbarState({ open: true, ...newState });
+  };
+
+  const handleClose = () => {
+    setSnackbarState({ ...snackbarState, open: false });
+  };
 
   const standVersionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setForestStandVersion(event.target.value);
@@ -46,7 +68,13 @@ const MainView: React.FC = () => {
   }
 
   const getData = () => {
-    const arrayOfIDs = propertyIDs.replace(/[\r\n\t]/g, "").split(',')
+    if (folderPath === '') {
+      enqueueSnackbar('This is a snackbar:D')
+      return
+    }
+    const arrayOfIDs = propertyIDs.replace(/[\r\n\t]/g, "").split(',').filter(string => string)
+    // const filteredArray = arrayOfIDs.filter(string => string)
+    console.log(arrayOfIDs)
     arrayOfIDs.forEach(async (ID: string) => {
       const fetchURL = 'https://beta-paikkatieto.maanmittauslaitos.fi/kiinteisto-avoin/simple-features/v1/collections/PalstanSijaintitiedot/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F3067&kiinteistotunnuksenEsitysmuoto='
       const response = await fetch(fetchURL + ID)
@@ -55,30 +83,28 @@ const MainView: React.FC = () => {
 
       try {
         data.features.forEach(async (geometry: any, index: number) => {
-          const WKTPolygon = wkt.stringify(geometry)
-          const fetchURL = 'https://mtsrajapinnat.metsaan.fi/ATServices/ATXmlExportService/FRStandData/v1/ByPolygon?'
+          const WKTPolygon = wkt.stringify(geometry) as string
+          console.log('wktPolygon: ', WKTPolygon)
+          const fetchURL = 'https://mtsrajapinnat.metsaan.fi/ATServices/ATXmlExportService/FRStandData/v1/ByPolygon'
           const response = await fetch(fetchURL, {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded'
             },
             method: 'POST',
-            body: `wktPolygon=${WKTPolygon}&stdVersion=${forestStandVersion}`
+            body: `wktPolygon=${encodeURIComponent(WKTPolygon)}&stdVersion=${forestStandVersion}`
           })
           const dataAsText = await response.text()
           console.log(dataAsText)
-
 
           ipcRenderer.invoke('saveXml', { filename: `data${index}.txt`, data: dataAsText }).then((result: any) => {
             console.log('SAVED!', result)
           })
         })
-
       } catch (error) {
         console.log(error)
       }
     })
   }
-
 
   return (
     <div >
@@ -130,6 +156,7 @@ const MainView: React.FC = () => {
         </Grid>
         <Grid item xs={12}>
           <TextField
+            onClick={() => openFileBrowser()}
             id="filled-read-only-input"
             label="Folder path"
             defaultValue="Hello World"
@@ -139,11 +166,29 @@ const MainView: React.FC = () => {
             }}
             variant="outlined"
             fullWidth
+            required
           />
-          <button onClick={() => openFileBrowser()}>openFileBrowser</button>
-          <button onClick={() => getData()}>Get data!</button>
+        </Grid>
+        <Grid item xs={12}>
+          <Button variant='outlined' onClick={() => getData()} endIcon={<DownloadIcon />}>
+            Download all data
+          </Button>
         </Grid>
       </Grid>
+
+      <button onClick={() => showSnackbar({
+        vertical: 'bottom',
+        horizontal: 'right',
+      })}>open snackbar</button>
+
+      <button onClick={() => handleClose}>close snackbar</button>
+      <Snackbar
+        anchorOrigin={{ vertical, horizontal }}
+        open={open}
+        onClose={handleClose}
+        message="I love snacks"
+        key={vertical + horizontal}
+      ></Snackbar>
     </div>
   )
 }
