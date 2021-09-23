@@ -19,11 +19,6 @@ const MainView: React.FC = () => {
   const [propertyIDs, setPropertyIDs] = React.useState('')
   const [forestStandVersion, setForestStandVersion] = React.useState('MV1.8');
   const [folderPath, setFolderPath] = React.useState('')
-  const [snackbarState, setSnackbarState] = React.useState<SnackbarState>({
-    open: false,
-    vertical: 'top',
-    horizontal: 'center'
-  })
 
   const currencies = [
     {
@@ -43,16 +38,6 @@ const MainView: React.FC = () => {
       label: 'latest',
     },
   ];
-
-  const { vertical, horizontal, open } = snackbarState;
-
-  const showSnackbar = (newState: SnackbarOrigin) => {
-    setSnackbarState({ open: true, ...newState });
-  };
-
-  const handleClose = () => {
-    setSnackbarState({ ...snackbarState, open: false });
-  };
 
   const standVersionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setForestStandVersion(event.target.value);
@@ -175,20 +160,6 @@ const MainView: React.FC = () => {
           </Button>
         </Grid>
       </Grid>
-
-      <button onClick={() => showSnackbar({
-        vertical: 'bottom',
-        horizontal: 'right',
-      })}>open snackbar</button>
-
-      <button onClick={() => handleClose}>close snackbar</button>
-      <Snackbar
-        anchorOrigin={{ vertical, horizontal }}
-        open={open}
-        onClose={handleClose}
-        message="I love snacks"
-        key={vertical + horizontal}
-      ></Snackbar>
     </div>
   )
 }
