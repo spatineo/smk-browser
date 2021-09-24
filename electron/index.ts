@@ -13,12 +13,16 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      webSecurity: false
     }
   })
 
-  window.loadFile('index.html')
-  window.webContents.openDevTools()
+  if (process.platform === 'win32') {
+    window.loadFile(`file://${__dirname}/index.html`)
+  }
+  window.loadFile(`${__dirname}/index.html`)
+  // window.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {
