@@ -22,7 +22,7 @@ const createWindow = () => {
     window.loadFile(`file://${__dirname}/index.html`)
   }
   window.loadFile(`${__dirname}/index.html`)
-  // window.webContents.openDevTools()
+  window.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {
