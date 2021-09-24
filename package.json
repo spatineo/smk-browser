@@ -26,6 +26,7 @@
   "scripts": {
     "start": "npm run build && electron ./build/index.js",
     "build": " PUBLIC_URL=./ react-scripts build && tsc -p electron/tsconfig.json",
+    "build-windows": "set PUBLIC_URL=./&&react-scripts build && tsc -p electron/tsconfig.json",
     "electron": "cross-env NODE_ENV=dev nodemon --exec \"\"electron .\"\"",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
