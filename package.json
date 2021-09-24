@@ -18,7 +18,7 @@
     "build": " PUBLIC_URL=./ react-scripts build && tsc -p electron/tsconfig.json",
     "build-windows": "set PUBLIC_URL=./&&react-scripts build&&tsc -p electron/tsconfig.json",
     "prep": "cp electron-package.json build/package.json && cd build/ && npm install",
-    "prep-windows": "copy electron-package.json build/package.json&&cd build/&&npm install",
+    "prep-windows": "cp electron-package.json build/package.json&&cd build/&&npm install",
     "electron-packager-windows": "cd build/&&npx electron-packager . smk-browser --platform=win32 --out=release-builds --version-string.ProductName=SMK-Browser",
     "electron": "cross-env NODE_ENV=dev nodemon --exec \"\"electron .\"\"",
     "test": "react-scripts test",
