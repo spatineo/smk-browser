@@ -1,7 +1,8 @@
-# name: Build
-# on: [push, pull_request]
+name: Build
+on: [push, pull_request]
 
-# jobs:
+
+jobs:
 #   build_on_linux:
 #     runs-on: ubuntu-latest
 #     steps:
@@ -26,14 +27,18 @@
 #     - name: build
 #       run: npm run build
 
-#   build_on_win:
-#     runs-on: windows-latest
-#     steps:
-#     - uses: actions/checkout@v2
-#     - uses: actions/setup-node@master
-#       with:
-#         node-version: 14
-#     - name: install dependencies
-#       run: npm install
-#     - name: build
-#       run: npm run build
+  build_on_win:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@master
+      with:
+        node-version: 14
+    - name: install dependencies
+      run: npm install
+    - name: build
+      run: npm run build-windows
+    - name: prep
+      run: npm run prep-windows
+    - name: packager
+      run: npm run electron-packager-windows

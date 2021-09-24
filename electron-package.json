@@ -1,0 +1,15 @@
+{
+  "name": "electron-react-typescript-template",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "wkt": "^0.1.1"
+  },
+  "scripts": {
+    "electron-packager-windows": "electron-packager . smk-browser --platform=win32 --out=release-builds --version-string.ProductName=SMK-Browser"
+  },
+  "devDependencies": {
+    "electron": "^14.0.0",
+    "electron-packager": "^15.4.0"
+  }
+}
