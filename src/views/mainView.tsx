@@ -90,13 +90,14 @@ const MainView: React.FC = () => {
 
           // _____ Write files to folder _____
           if (dataAsText.includes('<Error><Message>errCode')) {
-            ipcRenderer.invoke('saveFile', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: emptyXML }).then((result: any) => {
+            ipcRenderer.invoke('saveFile', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: empty }).then((result: any) => {
+              console.log('SAVED!', result)
+            })
+          } else {
+            ipcRenderer.invoke('saveFile', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: dataAsText }).then((result: any) => {
               console.log('SAVED!', result)
             })
           }
-          ipcRenderer.invoke('saveFile', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: dataAsText }).then((result: any) => {
-            console.log('SAVED!', result)
-          })
         })
       } catch (error) {
         enqueueSnackbar(`Error during download: ${error}`, { variant: 'error' })
