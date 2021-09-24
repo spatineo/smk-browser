@@ -1,5 +1,5 @@
 {
-  "name": "SMK Browser",
+  "name": "electron-react-typescript-template",
   "version": "0.1.0",
   "private": true,
   "main": "build/index.js",
