@@ -22,3 +22,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 /xmlFiles
+
+#Packages
+/SMK-browser-darwin-x64
+/SMK-browser-darwin-arm64
+/SMK-browser-linux-x64
+/SMK-browser-linux-arm64
+/SMK-browser-linux-armv7l
+/SMK-browser-linux-ia32
+/SMK-browser-mas-x64
+/SMK-browser-mas-arm64
+/SMK-browser-win32-x64
+/SMK-browser-win32-arm64
+/SMK-browser-win32-ia32
