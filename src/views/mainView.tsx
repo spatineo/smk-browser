@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { createStyles, makeStyles } from '@material-ui/styles'
 import { AppBar, Button, Grid, TextField, Toolbar, IconButton, Typography } from '@material-ui/core'
-import MenuIcon from '@material-ui/icons/Menu'
 import DownloadIcon from '@material-ui/icons/CloudDownload'
 import { useSnackbar } from 'notistack'
 const wkt = require('wkt')
@@ -59,6 +58,12 @@ const MainView: React.FC = () => {
 
     const arrayOfIDs = propertyIDs.replace(/[\r\n\t]/g, "").split(',').filter(string => string)
     arrayOfIDs.forEach(async (ID: string, index: number) => {
+
+      // _____ Clear old files from folder _____
+      const result = await ipcRenderer.invoke('removeOldFiles', { propertyID: ID })
+      console.log('Old files removed!', result)
+
+      // _____ Download Data ______
       const fetchURL = 'https://beta-paikkatieto.maanmittauslaitos.fi/kiinteisto-avoin/simple-features/v1/collections/PalstanSijaintitiedot/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F3067&kiinteistotunnuksenEsitysmuoto='
       const response = await fetch(fetchURL + ID)
       const data = await response.json()
@@ -75,7 +80,9 @@ const MainView: React.FC = () => {
           })
           enqueueSnackbar(`Downloading files for ID: ${ID} `, { variant: 'info' })
           const dataAsText = await response.text()
-          ipcRenderer.invoke('saveXml', { filename: `data${index}.txt`, data: dataAsText }).then((result: any) => {
+
+          // _____ Write files to folder _____
+          ipcRenderer.invoke('saveXml', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: dataAsText }).then((result: any) => {
             console.log('SAVED!', result)
           })
         })
