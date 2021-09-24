@@ -2,6 +2,7 @@
   "name": "electron-react-typescript-template",
   "version": "0.1.0",
   "private": true,
+  "main": "build/index.js",
   "dependencies": {
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
@@ -27,6 +28,7 @@
     "start": "npm run build && electron ./build/index.js",
     "build": " PUBLIC_URL=./ react-scripts build && tsc -p electron/tsconfig.json",
     "build-windows": "set PUBLIC_URL=./&&react-scripts build&&tsc -p electron/tsconfig.json",
+    "electron-packager-windows": "electron-packager . smk-browser --platform=win32 --out=release-builds --version-string.ProductName=SMK-Browser",
     "electron": "cross-env NODE_ENV=dev nodemon --exec \"\"electron .\"\"",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -52,6 +54,7 @@
   },
   "devDependencies": {
     "@electron-forge/publisher-github": "^6.0.0-beta.61",
+    "electron-packager": "^15.4.0",
     "electron-reload": "^2.0.0-alpha.1",
     "nodemon": "^2.0.12"
   },
