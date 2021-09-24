@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createStyles, makeStyles } from '@material-ui/styles'
-import { AppBar, Button, Grid, TextField, Toolbar, IconButton, Typography } from '@material-ui/core'
+import { AppBar, Button, Grid, TextField, Toolbar, Typography } from '@material-ui/core'
 import DownloadIcon from '@material-ui/icons/CloudDownload'
 import { useSnackbar } from 'notistack'
 const wkt = require('wkt')
@@ -14,7 +14,9 @@ const MainView: React.FC = () => {
   const [forestStandVersion, setForestStandVersion] = React.useState('MV1.8');
   const [folderPath, setFolderPath] = React.useState('')
 
-  const currencies = [
+  const emptyXML = '<ForestPropertyData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gml="http://www.opengis.net/gml" xmlns:gdt="http://standardit.tapio.fi/schemas/forestData/common/geometricDataTypes" xmlns:co="http://standardit.tapio.fi/schemas/forestData/common" xmlns:sf="http://standardit.tapio.fi/schemas/forestData/specialFeature" xmlns:op="http://standardit.tapio.fi/schemas/forestData/operation" xmlns:dts="http://standardit.tapio.fi/schemas/forestData/deadTreeStrata" xmlns:tss="http://standardit.tapio.fi/schemas/forestData/treeStandSummary" xmlns:tst="http://standardit.tapio.fi/schemas/forestData/treeStratum" xmlns:ts="http://standardit.tapio.fi/schemas/forestData/treeStand" xmlns:st="http://standardit.tapio.fi/schemas/forestData/Stand" xmlns="http://standardit.tapio.fi/schemas/forestData" xsi:schemaLocation="http://standardit.tapio.fi/schemas/forestData ForestData.xsd"><st:Stands/></ForestPropertyData>'
+
+  const versions = [
     {
       value: 'MV1.6',
       label: 'MV1.6',
@@ -67,6 +69,10 @@ const MainView: React.FC = () => {
       const fetchURL = 'https://beta-paikkatieto.maanmittauslaitos.fi/kiinteisto-avoin/simple-features/v1/collections/PalstanSijaintitiedot/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F3067&kiinteistotunnuksenEsitysmuoto='
       const response = await fetch(fetchURL + ID)
       const data = await response.json()
+      const dataString = JSON.stringify(data)
+      ipcRenderer.invoke('saveFile', { filename: `mml-${ID}.json`, data: dataString }).then((result: any) => {
+        console.log('SAVED!', result)
+      })
       try {
         data.features.forEach(async (geometry: any, index: number) => {
           const WKTPolygon = wkt.stringify(geometry) as string
@@ -78,11 +84,17 @@ const MainView: React.FC = () => {
             method: 'POST',
             body: `wktPolygon=${encodeURIComponent(WKTPolygon)}&stdVersion=${forestStandVersion}`
           })
+
           enqueueSnackbar(`Downloading files for ID: ${ID} `, { variant: 'info' })
           const dataAsText = await response.text()
 
           // _____ Write files to folder _____
-          ipcRenderer.invoke('saveXml', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: dataAsText }).then((result: any) => {
+          if (dataAsText.includes('<Error><Message>errCode')) {
+            ipcRenderer.invoke('saveFile', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: emptyXML }).then((result: any) => {
+              console.log('SAVED!', result)
+            })
+          }
+          ipcRenderer.invoke('saveFile', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: dataAsText }).then((result: any) => {
             console.log('SAVED!', result)
           })
         })
@@ -120,17 +132,17 @@ const MainView: React.FC = () => {
           <TextField
             id="outlined-select-currency-native"
             select
-            label="Forest Stand"
+            label="Version"
             value={forestStandVersion}
             onChange={standVersionChange}
             SelectProps={{
               native: true,
             }}
-            helperText="Please select your currency"
+            helperText="Select version"
             variant="outlined"
             fullWidth
           >
-            {currencies.map((option) => (
+            {versions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
