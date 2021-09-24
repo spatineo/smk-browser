@@ -62,3 +62,18 @@ ipcMain.handle('openFileSystem', async (event, window) => {
   console.log('Got the path: ', selectedPath)
   return selectedPath
 })
+
+ipcMain.handle('removeOldFiles', async (event, object) => {
+  fs.readdir(`${selectedPath}`, (err: any, files: any) => {
+    files.forEach((file: any) => {
+      console.log(file)
+      const fileString = file.toString()
+      if (fileString.includes(object.propertyID)) {
+        console.log('Removing file!')
+        fs.unlink(`${selectedPath}/${file}`)
+      }
+    })
+  })
+  const results = { ok: true }
+  return results
+})
