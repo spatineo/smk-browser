@@ -2,6 +2,7 @@
   "name": "electron-react-typescript-template",
   "version": "0.1.0",
   "private": true,
+  "main": "build/index.js",
   "dependencies": {
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
@@ -51,6 +52,7 @@
   },
   "devDependencies": {
     "@electron-forge/publisher-github": "^6.0.0-beta.61",
+    "electron-packager": "^15.4.0",
     "electron-reload": "^2.0.0-alpha.1",
     "nodemon": "^2.0.12"
   },
