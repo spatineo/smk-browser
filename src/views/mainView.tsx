@@ -90,7 +90,7 @@ const MainView: React.FC = () => {
 
           // _____ Write files to folder _____
           if (dataAsText.includes('<Error><Message>errCode')) {
-            ipcRenderer.invoke('saveFile', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: empty }).then((result: any) => {
+            ipcRenderer.invoke('saveFile', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: emptyXML }).then((result: any) => {
               console.log('SAVED!', result)
             })
           } else {
