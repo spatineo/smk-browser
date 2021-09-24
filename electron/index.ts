@@ -41,16 +41,10 @@ app.on('window-all-closed', () => {
   }
 })
 
-ipcMain.handle('saveXml', async (event, obj) => {
-  console.log('Hello, I am a node server. I will save a file', obj.filename)
-  fs.writeFile(`${selectedPath}/${obj.filename}`, obj.data, () => {
-    var result = { ok: true }
-    console.log('returning', result)
-  })
-  // var fh = await fs.open('./xmlFiles', obj.filename, 'w')
-  // await fh.writeFile(obj.data)
-  // await fh.close()
-  var result = { ok: true }
+ipcMain.handle('saveFile', async (event, obj) => {
+  console.log('Saving file: ', obj.filename)
+  fs.writeFile(`${selectedPath}/${obj.filename}`, obj.data)
+  const result = { ok: true }
   console.log('returning', result)
   return result
 })
@@ -66,10 +60,9 @@ ipcMain.handle('openFileSystem', async (event, window) => {
 ipcMain.handle('removeOldFiles', async (event, object) => {
   fs.readdir(`${selectedPath}`, (err: any, files: any) => {
     files.forEach((file: any) => {
-      console.log(file)
       const fileString = file.toString()
       if (fileString.includes(object.propertyID)) {
-        console.log('Removing file!')
+        console.log('Removing file: ', file)
         fs.unlink(`${selectedPath}/${file}`)
       }
     })
