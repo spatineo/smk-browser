@@ -1,16 +1,13 @@
 import * as React from 'react'
-import { createStyles, makeStyles } from '@material-ui/styles'
-import { AppBar, Button, Grid, TextField, Toolbar, IconButton, Typography } from '@material-ui/core'
-import MenuIcon from '@material-ui/icons/Menu'
+import { AppBar, Button, Grid, TextField, Toolbar, Typography } from '@material-ui/core'
 import DownloadIcon from '@material-ui/icons/CloudDownload'
 import { useSnackbar } from 'notistack'
 const wkt = require('wkt')
 
-const { ipcRenderer, dialog } = window.require('electron');
+const { ipcRenderer } = window.require('electron');
 
 const MainView: React.FC = () => {
-  const classes = useStyles()
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar()
+  const { enqueueSnackbar } = useSnackbar()
   const [propertyIDs, setPropertyIDs] = React.useState('')
   const [forestStandVersion, setForestStandVersion] = React.useState('MV1.8');
   const [folderPath, setFolderPath] = React.useState('')
@@ -157,9 +154,5 @@ const MainView: React.FC = () => {
     </div>
   )
 }
-
-const useStyles = makeStyles(() =>
-  createStyles({
-  }))
 
 export default MainView
