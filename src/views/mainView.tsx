@@ -3,9 +3,15 @@ import { createStyles, makeStyles } from '@material-ui/styles'
 import { AppBar, Button, Grid, TextField, Toolbar, Typography } from '@material-ui/core'
 import DownloadIcon from '@material-ui/icons/CloudDownload'
 import { useSnackbar } from 'notistack'
+import LogComponent from '../components/LogComponent'
 const wkt = require('wkt')
 
 const { ipcRenderer, dialog } = window.require('electron');
+
+interface Log {
+  type: string,
+  message: string
+}
 
 const MainView: React.FC = () => {
   const classes = useStyles()
@@ -13,6 +19,9 @@ const MainView: React.FC = () => {
   const [propertyIDs, setPropertyIDs] = React.useState('')
   const [forestStandVersion, setForestStandVersion] = React.useState('MV1.8');
   const [folderPath, setFolderPath] = React.useState('')
+  const [logData, setLogData] = React.useState<Log[]>([])
+
+  // console.log('Log Data in mainView: ', logData)
 
   const emptyXML = '<ForestPropertyData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gml="http://www.opengis.net/gml" xmlns:gdt="http://standardit.tapio.fi/schemas/forestData/common/geometricDataTypes" xmlns:co="http://standardit.tapio.fi/schemas/forestData/common" xmlns:sf="http://standardit.tapio.fi/schemas/forestData/specialFeature" xmlns:op="http://standardit.tapio.fi/schemas/forestData/operation" xmlns:dts="http://standardit.tapio.fi/schemas/forestData/deadTreeStrata" xmlns:tss="http://standardit.tapio.fi/schemas/forestData/treeStandSummary" xmlns:tst="http://standardit.tapio.fi/schemas/forestData/treeStratum" xmlns:ts="http://standardit.tapio.fi/schemas/forestData/treeStand" xmlns:st="http://standardit.tapio.fi/schemas/forestData/Stand" xmlns="http://standardit.tapio.fi/schemas/forestData" xsi:schemaLocation="http://standardit.tapio.fi/schemas/forestData ForestData.xsd"><st:Stands/></ForestPropertyData>'
 
@@ -63,7 +72,7 @@ const MainView: React.FC = () => {
 
       // _____ Clear old files from folder _____
       const result = await ipcRenderer.invoke('removeOldFiles', { propertyID: ID })
-      console.log('Old files removed!', result)
+      // console.log('Old files removed!', result)
 
       // _____ Download Data ______
       const fetchURL = 'https://beta-paikkatieto.maanmittauslaitos.fi/kiinteisto-avoin/simple-features/v1/collections/PalstanSijaintitiedot/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F3067&kiinteistotunnuksenEsitysmuoto='
@@ -71,7 +80,7 @@ const MainView: React.FC = () => {
       const data = await response.json()
       const dataString = JSON.stringify(data)
       ipcRenderer.invoke('saveFile', { filename: `mml-${ID}.json`, data: dataString }).then((result: any) => {
-        console.log('SAVED!', result)
+        // console.log('SAVED!', result)
       })
       try {
         data.features.forEach(async (geometry: any, index: number) => {
@@ -90,12 +99,12 @@ const MainView: React.FC = () => {
 
           // _____ Write files to folder _____
           if (dataAsText.includes('<Error><Message>errCode')) {
+            setLogData((logData) => [...logData, { type: 'error', message: `Kiinteistön ${ID} palstalle ${wkt} ei löytynyt metsävarakuvioita` }])
             ipcRenderer.invoke('saveFile', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: emptyXML }).then((result: any) => {
-              console.log('SAVED!', result)
             })
           } else {
+            setLogData((logData) => [...logData, { type: 'success', message: `Lataus kiinteistölle ${ID} palstalla ${wkt} onnistui!` }])
             ipcRenderer.invoke('saveFile', { filename: `mvk-${ID}_${index}_${forestStandVersion}.xml`, data: dataAsText }).then((result: any) => {
-              console.log('SAVED!', result)
             })
           }
         })
@@ -172,6 +181,9 @@ const MainView: React.FC = () => {
             endIcon={<DownloadIcon />}>
             Download all data
           </Button>
+        </Grid>
+        <Grid item xs={12}>
+          <LogComponent logData={logData} />
         </Grid>
       </Grid>
     </div>
